@@ -24,7 +24,7 @@ class Menu:
         self.clock = clock
         self.fonts = fonts
 
-        self.logo = load_image("logo_brasfeed.png", LOGO_SIZE)
+        self.logo = load_image("logo_brasfeed.png", LOGO_SIZE, remove_bg=True)
 
     def show(self):
         while True:

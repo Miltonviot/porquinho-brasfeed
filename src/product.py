@@ -23,8 +23,8 @@ class Product:
         self.speed = 3
 
         self.images = {
-            "brasfeed": load_image("produto_brasfeed.png", PRODUCT_SIZE),
-            "competitor": load_image("produto_concorrente.png", PRODUCT_SIZE),
+            "brasfeed": load_image("produto_brasfeed.png", PRODUCT_SIZE, remove_bg=True),
+            "competitor": load_image("produto_concorrente.png", PRODUCT_SIZE, remove_bg=True),
         }
 
         self.reset(start_outside=False)

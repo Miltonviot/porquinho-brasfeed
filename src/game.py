@@ -45,7 +45,7 @@ class Game:
         }
 
         self.background_image = load_image("fundo_granja.png", BACKGROUND_SIZE)
-        self.logo_small = load_image("logo_brasfeed.png", (150, 60))
+        self.logo_small = load_image("logo_brasfeed.png", (150, 60), remove_bg=True)
 
         self.menu = Menu(self.screen, self.clock, self.fonts)
 

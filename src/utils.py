@@ -3,20 +3,77 @@ import pygame
 from src.config import IMAGES_DIR
 
 
-def load_image(filename, size=None):
+def remove_light_background(surface, threshold=232, neutral_tolerance=34):
     """
-    Carrega uma imagem da pasta assets/images.
-    Se a imagem não existir ou falhar, retorna None.
+    Remove fundo branco/cinza claro/quadriculado claro de uma imagem.
+
+    Útil para imagens PNG que parecem transparentes, mas vieram com
+    fundo branco ou quadriculado salvo dentro do arquivo.
+
+    threshold:
+        quanto mais baixo, mais agressiva é a remoção.
+
+    neutral_tolerance:
+        controla quanto os canais RGB podem variar para ainda serem
+        considerados branco/cinza neutro.
+    """
+    image = surface.convert_alpha()
+    width, height = image.get_size()
+
+    for x in range(width):
+        for y in range(height):
+            r, g, b, a = image.get_at((x, y))
+
+            max_rgb = max(r, g, b)
+            min_rgb = min(r, g, b)
+
+            is_light = r >= threshold and g >= threshold and b >= threshold
+            is_neutral = (max_rgb - min_rgb) <= neutral_tolerance
+
+            if is_light and is_neutral:
+                image.set_at((x, y), (255, 255, 255, 0))
+
+    return image
+
+
+def crop_transparent_borders(surface):
+    """
+    Recorta bordas transparentes ao redor do sprite.
+    """
+    rect = surface.get_bounding_rect()
+
+    if rect.width > 0 and rect.height > 0:
+        return surface.subsurface(rect).copy()
+
+    return surface
+
+
+def load_image(filename, size=None, remove_bg=False, crop=True):
+    """
+    Carrega imagem da pasta assets/images.
+
+    Parâmetros:
+    - filename: nome do arquivo dentro de assets/images.
+    - size: tupla opcional, exemplo: (100, 80).
+    - remove_bg: remove fundo claro/cinza/branco.
+    - crop: remove bordas transparentes depois do tratamento.
     """
     path = IMAGES_DIR / filename
 
     try:
         image = pygame.image.load(str(path)).convert_alpha()
 
+        if remove_bg:
+            image = remove_light_background(image)
+
+        if crop:
+            image = crop_transparent_borders(image)
+
         if size:
             image = pygame.transform.smoothscale(image, size)
 
         return image
+
     except Exception as error:
         print(f"[AVISO] Nao foi possivel carregar imagem: {filename} | {error}")
         return None

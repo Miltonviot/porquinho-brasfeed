@@ -28,9 +28,9 @@ class Player:
         self.invulnerable_time = 0
 
         self.images = {
-            1: load_image("porco_leitao.png", PIGLET_SIZE),
-            2: load_image("porco_crescendo.png", PIG_GROWING_SIZE),
-            3: load_image("porco_grande.png", PIG_BIG_SIZE),
+            1: load_image("porco_leitao.png", PIGLET_SIZE, remove_bg=True),
+            2: load_image("porco_crescendo.png", PIG_GROWING_SIZE, remove_bg=True),
+            3: load_image("porco_grande.png", PIG_BIG_SIZE, remove_bg=True),
         }
 
         self.rect = pygame.Rect(80, SCREEN_HEIGHT - 160, *PIGLET_SIZE)
