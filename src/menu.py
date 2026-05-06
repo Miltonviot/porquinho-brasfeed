@@ -3,7 +3,6 @@ import sys
 
 from src.config import (
     SCREEN_WIDTH,
-    SCREEN_HEIGHT,
     BLUE,
     DARK_BLUE,
     WHITE,
@@ -34,7 +33,7 @@ class Menu:
             pygame.draw.rect(self.screen, DARK_BLUE, (0, 0, SCREEN_WIDTH, 180))
 
             if self.logo:
-                logo_rect = self.logo.get_rect(center=(SCREEN_WIDTH // 2, 92))
+                logo_rect = self.logo.get_rect(center=(SCREEN_WIDTH // 2, 86))
                 self.screen.blit(self.logo, logo_rect)
             else:
                 draw_text(
@@ -49,7 +48,7 @@ class Menu:
 
             draw_text(
                 surface=self.screen,
-                text="Demo 2D em Python + Pygame",
+                text="ROI Suinos: tempo parado vira custo, escolha certa vira resultado.",
                 font=self.fonts["normal"],
                 color=YELLOW,
                 x=SCREEN_WIDTH // 2,
@@ -57,7 +56,7 @@ class Menu:
                 centered=True
             )
 
-            panel = pygame.Rect(170, 215, 620, 220)
+            panel = pygame.Rect(145, 210, 670, 240)
             draw_panel(
                 surface=self.screen,
                 rect=panel,
@@ -69,11 +68,11 @@ class Menu:
 
             draw_text(
                 surface=self.screen,
-                text="COMANDOS E OBJETIVO",
+                text="COMANDOS, ROI E OBJETIVO",
                 font=self.fonts["subtitle"],
                 color=BLUE,
                 x=SCREEN_WIDTH // 2,
-                y=250,
+                y=246,
                 centered=True
             )
 
@@ -82,35 +81,44 @@ class Menu:
                 text="W A S D ou SETAS - mover o porquinho",
                 font=self.fonts["normal"],
                 color=BLACK,
-                x=230,
-                y=292
+                x=205,
+                y=288
             )
 
             draw_text(
                 surface=self.screen,
-                text="Coma produtos BRASFEED para crescer.",
+                text="Brasfeed: melhora crescimento, caixa e ROI do lote.",
                 font=self.fonts["normal"],
                 color=DARK_GREEN,
-                x=230,
-                y=326
+                x=205,
+                y=322
             )
 
             draw_text(
                 surface=self.screen,
-                text="Evite produtos do concorrente para nao adoecer.",
+                text="Concorrente: causa doenca, atraso e prejuizo.",
                 font=self.fonts["normal"],
                 color=RED,
-                x=230,
-                y=360
+                x=205,
+                y=356
             )
 
             draw_text(
                 surface=self.screen,
-                text="5 Brasfeed = vitoria | 3 concorrentes = derrota",
+                text="O tempo tambem custa dinheiro: termine rapido com caixa positivo.",
                 font=self.fonts["normal"],
                 color=BLACK,
-                x=230,
-                y=394
+                x=205,
+                y=390
+            )
+
+            draw_text(
+                surface=self.screen,
+                text="5 Brasfeed = lote terminado | 3 erros ou caixa zerado = derrota",
+                font=self.fonts["small"],
+                color=BLACK,
+                x=205,
+                y=422
             )
 
             button_clicked = draw_button(
@@ -118,7 +126,7 @@ class Menu:
                 text="JOGAR",
                 font=self.fonts["subtitle"],
                 x=365,
-                y=470,
+                y=475,
                 width=230,
                 height=58,
                 color=GREEN,
