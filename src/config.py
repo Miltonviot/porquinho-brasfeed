@@ -1,10 +1,36 @@
 from pathlib import Path
+import sys
 
 # ============================================================
-# CAMINHOS DO PROJETO
+# CAMINHO BASE PORTAVEL
 # ============================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+def get_base_dir():
+    """
+    Retorna a pasta base do jogo.
+
+    No VS Code / Python:
+        usa a raiz do projeto.
+
+    No executavel PyInstaller:
+        usa a pasta onde esta o PorquinhoBrasfeed.exe.
+
+    Isso permite entregar apenas:
+        PorquinhoBrasfeed.exe
+        assets/
+    """
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+
+    return Path(__file__).resolve().parent.parent
+
+
+BASE_DIR = get_base_dir()
+
+# ============================================================
+# CAMINHOS DOS ASSETS
+# ============================================================
 
 ASSETS_DIR = BASE_DIR / "assets"
 IMAGES_DIR = ASSETS_DIR / "images"
@@ -35,7 +61,7 @@ PRODUCT_MIN_SPEED = 2
 PRODUCT_MAX_SPEED = 5
 
 # ============================================================
-# TAMANHOS DOS ASSETS NO JOGO
+# TAMANHOS DOS ASSETS
 # ============================================================
 
 LOGO_SIZE = (300, 120)
