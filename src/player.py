@@ -3,13 +3,17 @@ import pygame
 from src.config import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
+    PLAYER_SPEED,
+    WIN_SCORE,
     BLUE,
     WHITE,
     BLACK,
     PINK,
-    WIN_SCORE,
+    PIGLET_SIZE,
+    PIG_GROWING_SIZE,
+    PIG_BIG_SIZE,
 )
-from src.utils import load_image, draw_text
+from src.utils import load_image, draw_text, clamp
 
 
 class Player:
@@ -19,49 +23,62 @@ class Player:
         self.score = 0
         self.errors = 0
         self.phase = 1
-        self.speed = 6
+
+        self.speed = PLAYER_SPEED
         self.invulnerable_time = 0
 
         self.images = {
-            1: load_image("porco_leitao.png", (95, 75)),
-            2: load_image("porco_crescendo.png", (120, 92)),
-            3: load_image("porco_grande.png", (155, 115)),
+            1: load_image("porco_leitao.png", PIGLET_SIZE),
+            2: load_image("porco_crescendo.png", PIG_GROWING_SIZE),
+            3: load_image("porco_grande.png", PIG_BIG_SIZE),
         }
 
-        self.rect = pygame.Rect(80, SCREEN_HEIGHT - 175, 95, 75)
+        self.rect = pygame.Rect(80, SCREEN_HEIGHT - 160, *PIGLET_SIZE)
+        self.rect.bottom = SCREEN_HEIGHT - 45
 
     def update_size(self):
-        bottom = self.rect.bottom
+        old_center = self.rect.center
+        old_bottom = self.rect.bottom
 
         if self.score >= 4:
             self.phase = 3
-            self.rect.size = (155, 115)
+            self.rect.size = PIG_BIG_SIZE
         elif self.score >= 2:
             self.phase = 2
-            self.rect.size = (120, 92)
+            self.rect.size = PIG_GROWING_SIZE
         else:
             self.phase = 1
-            self.rect.size = (95, 75)
+            self.rect.size = PIGLET_SIZE
 
-        self.rect.bottom = bottom
+        self.rect.center = old_center
+        self.rect.bottom = old_bottom
+
+        self.rect.x = clamp(self.rect.x, 20, SCREEN_WIDTH - self.rect.width - 20)
+        self.rect.y = clamp(self.rect.y, 120, SCREEN_HEIGHT - self.rect.height - 35)
 
     def move(self):
         keys = pygame.key.get_pressed()
 
+        dx = 0
+        dy = 0
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            self.rect.x -= self.speed
+            dx -= self.speed
 
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            self.rect.x += self.speed
+            dx += self.speed
 
         if keys[pygame.K_UP] or keys[pygame.K_w]:
-            self.rect.y -= self.speed
+            dy -= self.speed
 
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            self.rect.y += self.speed
+            dy += self.speed
 
-        self.rect.x = max(20, min(SCREEN_WIDTH - self.rect.width - 20, self.rect.x))
-        self.rect.y = max(125, min(SCREEN_HEIGHT - self.rect.height - 45, self.rect.y))
+        self.rect.x += dx
+        self.rect.y += dy
+
+        self.rect.x = clamp(self.rect.x, 20, SCREEN_WIDTH - self.rect.width - 20)
+        self.rect.y = clamp(self.rect.y, 120, SCREEN_HEIGHT - self.rect.height - 35)
 
     def add_brasfeed(self):
         self.score += 1
@@ -88,8 +105,18 @@ class Player:
         pygame.draw.ellipse(surface, PINK, ear_left)
         pygame.draw.ellipse(surface, PINK, ear_right)
 
-        eye_left = pygame.Rect(self.rect.x + self.rect.w * 0.32, self.rect.y + self.rect.h * 0.30, 7, 7)
-        eye_right = pygame.Rect(self.rect.x + self.rect.w * 0.58, self.rect.y + self.rect.h * 0.30, 7, 7)
+        eye_left = pygame.Rect(
+            int(self.rect.x + self.rect.w * 0.34),
+            int(self.rect.y + self.rect.h * 0.30),
+            7,
+            7
+        )
+        eye_right = pygame.Rect(
+            int(self.rect.x + self.rect.w * 0.58),
+            int(self.rect.y + self.rect.h * 0.30),
+            7,
+            7
+        )
 
         pygame.draw.ellipse(surface, BLACK, eye_left)
         pygame.draw.ellipse(surface, BLACK, eye_right)
@@ -98,16 +125,17 @@ class Player:
         pygame.draw.ellipse(surface, (232, 105, 145), nose)
 
         draw_text(
-            surface,
-            str(self.phase),
-            self.fonts["small"],
-            BLACK,
-            self.rect.centerx,
-            self.rect.centery + 28,
+            surface=surface,
+            text=str(self.phase),
+            font=self.fonts["small"],
+            color=BLACK,
+            x=self.rect.centerx,
+            y=self.rect.centery + 28,
             centered=True
         )
 
     def draw(self, surface):
+        # Efeito de piscar quando come concorrente.
         if self.invulnerable_time > 0 and self.invulnerable_time % 10 >= 5:
             return
 
@@ -117,6 +145,13 @@ class Player:
             surface.blit(image, self.rect)
         else:
             self.draw_fallback(surface)
+
+    def get_phase_name(self):
+        if self.phase == 1:
+            return "LEITAO"
+        if self.phase == 2:
+            return "CRESCENDO"
+        return "TERMINACAO"
 
     def has_won(self):
         return self.score >= WIN_SCORE

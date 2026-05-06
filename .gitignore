@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Ambientes virtuais
 .venv/
 venv/
 env/

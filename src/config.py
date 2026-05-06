@@ -1,33 +1,80 @@
 from pathlib import Path
 
-# Caminhos
+# ============================================================
+# CAMINHOS DO PROJETO
+# ============================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 ASSETS_DIR = BASE_DIR / "assets"
 IMAGES_DIR = ASSETS_DIR / "images"
 SOUNDS_DIR = ASSETS_DIR / "sounds"
 FONTS_DIR = ASSETS_DIR / "fonts"
 
-# Janela
+# ============================================================
+# JANELA
+# ============================================================
+
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 580
 FPS = 60
 
-# Jogo
+GAME_TITLE = "Porquinho Brasfeed - Demo 2D"
+
+# ============================================================
+# REGRAS DO JOGO
+# ============================================================
+
 WIN_SCORE = 5
 MAX_ERRORS = 3
 
-# Cores
+PRODUCT_COUNT = 3
+
+PLAYER_SPEED = 6
+PRODUCT_MIN_SPEED = 2
+PRODUCT_MAX_SPEED = 5
+
+# ============================================================
+# TAMANHOS DOS ASSETS NO JOGO
+# ============================================================
+
+LOGO_SIZE = (300, 120)
+BACKGROUND_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
+
+PIGLET_SIZE = (115, 90)
+PIG_GROWING_SIZE = (145, 110)
+PIG_BIG_SIZE = (180, 132)
+
+PRODUCT_SIZE = (82, 82)
+
+# ============================================================
+# CORES
+# ============================================================
+
 WHITE = (248, 250, 252)
 BLACK = (20, 24, 33)
+
 BLUE = (18, 67, 124)
 LIGHT_BLUE = (38, 119, 204)
+DARK_BLUE = (9, 39, 82)
+
 GREEN = (34, 160, 91)
 DARK_GREEN = (20, 108, 61)
+
 YELLOW = (250, 196, 55)
+ORANGE = (238, 141, 42)
+
 RED = (218, 55, 60)
+DARK_RED = (140, 35, 40)
+
 PINK = (242, 139, 174)
+
 GRAY = (90, 98, 110)
+DARK_GRAY = (45, 52, 62)
 LIGHT_GRAY = (225, 231, 240)
+
 BACKGROUND = (235, 241, 247)
 GRASS = (187, 219, 145)
 WOOD = (166, 112, 68)
+
+TRANSPARENT_BLACK = (0, 0, 0, 120)
