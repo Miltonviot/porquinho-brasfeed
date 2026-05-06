@@ -45,7 +45,7 @@ SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 580
 FPS = 60
 
-GAME_TITLE = "Porquinho Brasfeed - Demo 2D"
+GAME_TITLE = "Porquinho Brasfeed - ROI Suinos"
 
 # ============================================================
 # REGRAS DO JOGO
@@ -59,6 +59,15 @@ PRODUCT_COUNT = 3
 PLAYER_SPEED = 6
 PRODUCT_MIN_SPEED = 2
 PRODUCT_MAX_SPEED = 5
+
+# ============================================================
+# ECONOMIA / ROI DA GAMEPLAY
+# ============================================================
+
+INITIAL_MONEY = 1000.0
+MONEY_GAIN_BRASFEED = 180.0
+MONEY_LOSS_COMPETITOR = 250.0
+MONEY_LOSS_PER_SECOND = 2.0
 
 # ============================================================
 # TAMANHOS DOS ASSETS
