@@ -2,20 +2,19 @@ import pygame
 
 from src.config import IMAGES_DIR
 
+# Cache simples para evitar processar a mesma imagem varias vezes.
+# Isso e importante no executavel, porque remover fundo pixel a pixel em
+# imagens grandes pode deixar o jogo lento ao iniciar a partida.
+_IMAGE_CACHE = {}
+
 
 def remove_light_background(surface, threshold=232, neutral_tolerance=34):
     """
     Remove fundo branco/cinza claro/quadriculado claro de uma imagem.
 
-    Útil para imagens PNG que parecem transparentes, mas vieram com
-    fundo branco ou quadriculado salvo dentro do arquivo.
-
-    threshold:
-        quanto mais baixo, mais agressiva é a remoção.
-
-    neutral_tolerance:
-        controla quanto os canais RGB podem variar para ainda serem
-        considerados branco/cinza neutro.
+    A funcao deve ser usada em imagens ja redimensionadas para o tamanho
+    final do jogo. Isso evita travamentos no EXE, pois processar imagens
+    grandes pixel a pixel e muito custoso.
     """
     image = surface.convert_alpha()
     width, height = image.get_size()
@@ -52,16 +51,26 @@ def load_image(filename, size=None, remove_bg=False, crop=True):
     """
     Carrega imagem da pasta assets/images.
 
-    Parâmetros:
-    - filename: nome do arquivo dentro de assets/images.
-    - size: tupla opcional, exemplo: (100, 80).
-    - remove_bg: remove fundo claro/cinza/branco.
-    - crop: remove bordas transparentes depois do tratamento.
+    Otimizacao importante:
+    - redimensiona antes de remover o fundo claro;
+    - guarda em cache a imagem ja processada.
+
+    Isso corrige a demora apos clicar em JOGAR no executavel.
     """
+    cache_key = (filename, size, remove_bg, crop)
+
+    if cache_key in _IMAGE_CACHE:
+        return _IMAGE_CACHE[cache_key].copy()
+
     path = IMAGES_DIR / filename
 
     try:
         image = pygame.image.load(str(path)).convert_alpha()
+
+        # Primeiro redimensiona para o tamanho real usado no jogo.
+        # Assim a remocao de fundo trabalha em poucos pixels.
+        if size:
+            image = pygame.transform.smoothscale(image, size)
 
         if remove_bg:
             image = remove_light_background(image)
@@ -69,9 +78,12 @@ def load_image(filename, size=None, remove_bg=False, crop=True):
         if crop:
             image = crop_transparent_borders(image)
 
-        if size:
-            image = pygame.transform.smoothscale(image, size)
+            # Se o crop mudar muito o tamanho final, reescala para manter
+            # hitbox e layout consistentes no jogo.
+            if size:
+                image = pygame.transform.smoothscale(image, size)
 
+        _IMAGE_CACHE[cache_key] = image.copy()
         return image
 
     except Exception as error:
