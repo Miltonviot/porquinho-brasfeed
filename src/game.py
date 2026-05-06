@@ -74,11 +74,10 @@ class Game:
                 (0, SCREEN_HEIGHT - 105, SCREEN_WIDTH, 10)
             )
 
-        # Topbar com transparência simulada por painel sólido
-        pygame.draw.rect(self.screen, DARK_BLUE, (0, 0, SCREEN_WIDTH, 88))
+        pygame.draw.rect(self.screen, DARK_BLUE, (0, 0, SCREEN_WIDTH, 92))
 
         if self.logo_small:
-            self.screen.blit(self.logo_small, (18, 14))
+            self.screen.blit(self.logo_small, (18, 15))
             text_x = 185
         else:
             draw_text(
@@ -93,7 +92,7 @@ class Game:
 
         draw_text(
             surface=self.screen,
-            text="Escolha Brasfeed para crescer. Evite o produto concorrente.",
+            text="ROI Suinos: Brasfeed melhora o lote. Tempo e concorrente reduzem a margem.",
             font=self.fonts["normal"],
             color=WHITE,
             x=text_x,
@@ -101,7 +100,7 @@ class Game:
         )
 
     def draw_hud(self, player):
-        panel = pygame.Rect(SCREEN_WIDTH - 324, 14, 300, 60)
+        panel = pygame.Rect(SCREEN_WIDTH - 330, 12, 306, 68)
 
         draw_panel(
             surface=self.screen,
@@ -112,31 +111,52 @@ class Game:
             border_width=2
         )
 
+        roi = player.get_roi_percent()
+        roi_color = GREEN if roi >= 0 else RED
+
         draw_text(
             surface=self.screen,
-            text=f"Crescimento: {player.score}/5",
+            text=f"ROI: {roi:+d}%",
             font=self.fonts["small"],
-            color=BLACK,
+            color=roi_color,
             x=panel.x + 16,
-            y=panel.y + 10
+            y=panel.y + 8
         )
 
         draw_text(
             surface=self.screen,
-            text=f"Doente: {player.errors}/3",
+            text=f"Caixa: {player.get_money_text()}",
+            font=self.fonts["small"],
+            color=BLACK,
+            x=panel.x + 16,
+            y=panel.y + 31
+        )
+
+        draw_text(
+            surface=self.screen,
+            text=f"Cresc.: {player.score}/5",
+            font=self.fonts["small"],
+            color=BLACK,
+            x=panel.x + 150,
+            y=panel.y + 8
+        )
+
+        draw_text(
+            surface=self.screen,
+            text=f"Doenca: {player.errors}/3",
             font=self.fonts["small"],
             color=RED,
-            x=panel.x + 16,
-            y=panel.y + 34
+            x=panel.x + 150,
+            y=panel.y + 31
         )
 
         draw_text(
             surface=self.screen,
             text=f"Fase: {player.get_phase_name()}",
-            font=self.fonts["small"],
+            font=self.fonts["tiny"],
             color=BLUE,
-            x=panel.x + 145,
-            y=panel.y + 22
+            x=panel.x + 16,
+            y=panel.y + 53
         )
 
     def draw_footer_hint(self):
@@ -153,7 +173,7 @@ class Game:
 
         draw_text(
             surface=self.screen,
-            text="Regra: Brasfeed fortalece o animal. Produto concorrente deixa o porquinho doente.",
+            text="Regra: Brasfeed aumenta caixa e crescimento. Concorrente causa doenca e prejuizo. Cada segundo reduz a margem.",
             font=self.fonts["tiny"],
             color=GRAY,
             x=footer.centerx,
@@ -161,7 +181,7 @@ class Game:
             centered=True
         )
 
-    def final_screen(self, title, message, color):
+    def final_screen(self, title, message, color, roi=None, money_text=None):
         while True:
             self.screen.fill(BLUE)
 
@@ -177,7 +197,7 @@ class Game:
                 font=self.fonts["title"],
                 color=color,
                 x=SCREEN_WIDTH // 2,
-                y=210,
+                y=205,
                 centered=True
             )
 
@@ -187,9 +207,21 @@ class Game:
                 font=self.fonts["subtitle"],
                 color=WHITE,
                 x=SCREEN_WIDTH // 2,
-                y=270,
+                y=262,
                 centered=True
             )
+
+            if roi is not None and money_text is not None:
+                roi_color = GREEN if roi >= 0 else RED
+                draw_text(
+                    surface=self.screen,
+                    text=f"Resultado economico: ROI {roi:+d}% | Caixa final: {money_text}",
+                    font=self.fonts["normal"],
+                    color=roi_color,
+                    x=SCREEN_WIDTH // 2,
+                    y=315,
+                    centered=True
+                )
 
             draw_text(
                 surface=self.screen,
@@ -197,7 +229,7 @@ class Game:
                 font=self.fonts["normal"],
                 color=YELLOW,
                 x=SCREEN_WIDTH // 2,
-                y=355,
+                y=370,
                 centered=True
             )
 
@@ -207,7 +239,7 @@ class Game:
                 font=self.fonts["normal"],
                 color=WHITE,
                 x=SCREEN_WIDTH // 2,
-                y=390,
+                y=405,
                 centered=True
             )
 
@@ -241,6 +273,8 @@ class Game:
         products = self.create_products()
 
         while True:
+            delta_ms = self.clock.get_time()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -250,7 +284,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-            player.update()
+            player.update(delta_ms)
 
             for product in products:
                 product.update()
@@ -273,10 +307,10 @@ class Game:
             self.draw_footer_hint()
 
             if player.has_won():
-                return "win"
+                return "win", player.get_roi_percent(), player.get_money_text()
 
             if player.has_lost(MAX_ERRORS):
-                return "lose"
+                return "lose", player.get_roi_percent(), player.get_money_text()
 
             pygame.display.flip()
             self.clock.tick(FPS)
@@ -284,17 +318,21 @@ class Game:
     def run(self):
         while True:
             self.menu.show()
-            result = self.play()
+            result, roi, money_text = self.play()
 
             if result == "win":
                 self.final_screen(
                     title="VITORIA!",
-                    message="O porquinho cresceu ate a fase de terminacao.",
-                    color=GREEN
+                    message="Lote terminado com ROI positivo.",
+                    color=GREEN,
+                    roi=roi,
+                    money_text=money_text
                 )
             else:
                 self.final_screen(
                     title="DERROTA!",
-                    message="O porquinho ficou doente com o produto concorrente.",
-                    color=RED
+                    message="O lote perdeu margem por doenca, atraso ou caixa zerado.",
+                    color=RED,
+                    roi=roi,
+                    money_text=money_text
                 )
