@@ -5,7 +5,11 @@ from src.config import (
     SCREEN_HEIGHT,
     PLAYER_SPEED,
     WIN_SCORE,
-    BLUE,
+    MAX_ERRORS,
+    INITIAL_MONEY,
+    MONEY_GAIN_BRASFEED,
+    MONEY_LOSS_COMPETITOR,
+    MONEY_LOSS_PER_SECOND,
     WHITE,
     BLACK,
     PINK,
@@ -23,6 +27,11 @@ class Player:
         self.score = 0
         self.errors = 0
         self.phase = 1
+
+        self.money = INITIAL_MONEY
+        self.initial_money = INITIAL_MONEY
+        self.elapsed_seconds = 0.0
+        self._time_accumulator_ms = 0
 
         self.speed = PLAYER_SPEED
         self.invulnerable_time = 0
@@ -82,15 +91,26 @@ class Player:
 
     def add_brasfeed(self):
         self.score += 1
+        self.money += MONEY_GAIN_BRASFEED
         self.update_size()
 
     def add_competitor(self):
         if self.invulnerable_time <= 0:
             self.errors += 1
+            self.money -= MONEY_LOSS_COMPETITOR
             self.invulnerable_time = 90
 
-    def update(self):
+    def update_economy(self, delta_ms):
+        self._time_accumulator_ms += delta_ms
+
+        while self._time_accumulator_ms >= 1000:
+            self._time_accumulator_ms -= 1000
+            self.elapsed_seconds += 1
+            self.money -= MONEY_LOSS_PER_SECOND
+
+    def update(self, delta_ms=0):
         self.move()
+        self.update_economy(delta_ms)
 
         if self.invulnerable_time > 0:
             self.invulnerable_time -= 1
@@ -150,11 +170,18 @@ class Player:
         if self.phase == 1:
             return "LEITAO"
         if self.phase == 2:
-            return "CRESCENDO"
+            return "CRESCIMENTO"
         return "TERMINACAO"
 
-    def has_won(self):
-        return self.score >= WIN_SCORE
+    def get_roi_percent(self):
+        return int(((self.money - self.initial_money) / self.initial_money) * 100)
 
-    def has_lost(self, max_errors):
-        return self.errors >= max_errors
+    def get_money_text(self):
+        value = max(0, int(self.money))
+        return f"R$ {value:,}".replace(",", ".")
+
+    def has_won(self):
+        return self.score >= WIN_SCORE and self.money > 0
+
+    def has_lost(self, max_errors=MAX_ERRORS):
+        return self.errors >= max_errors or self.money <= 0
