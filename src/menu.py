@@ -3,7 +3,6 @@ import sys
 
 from src.config import (
     SCREEN_WIDTH,
-    SCREEN_HEIGHT,
     BLUE,
     WHITE,
     YELLOW,
@@ -58,10 +57,41 @@ class Menu:
                 centered=True
             )
 
-            draw_text(self.screen, "W A S D ou SETAS - mover o porquinho", self.fonts["normal"], BLACK, 245, 270)
-            draw_text(self.screen, "Coma produtos BRASFEED para crescer.", self.fonts["normal"], DARK_GREEN, 245, 306)
-            draw_text(self.screen, "Evite produtos do concorrente para nao adoecer.", self.fonts["normal"], RED, 245, 342)
-            draw_text(self.screen, "5 Brasfeed = vitoria | 3 concorrentes = derrota", self.fonts["normal"], BLACK, 245, 378)
+            draw_text(
+                self.screen,
+                "W A S D ou SETAS - mover o porquinho",
+                self.fonts["normal"],
+                BLACK,
+                245,
+                270
+            )
+
+            draw_text(
+                self.screen,
+                "Coma produtos BRASFEED para crescer.",
+                self.fonts["normal"],
+                DARK_GREEN,
+                245,
+                306
+            )
+
+            draw_text(
+                self.screen,
+                "Evite produtos do concorrente para nao adoecer.",
+                self.fonts["normal"],
+                RED,
+                245,
+                342
+            )
+
+            draw_text(
+                self.screen,
+                "5 Brasfeed = vitoria | 3 concorrentes = derrota",
+                self.fonts["normal"],
+                BLACK,
+                245,
+                378
+            )
 
             button_clicked = draw_button(
                 self.screen,
