@@ -64,10 +64,19 @@ PRODUCT_MAX_SPEED = 5
 # ECONOMIA / ROI DA GAMEPLAY
 # ============================================================
 
+# Valores simplificados para deixar o conceito de ROI claro na gameplay:
+# - tempo parado consome margem;
+# - Brasfeed melhora desempenho, saude e caixa;
+# - concorrente gera doenca, atraso e prejuizo.
 INITIAL_MONEY = 1000.0
-MONEY_GAIN_BRASFEED = 180.0
-MONEY_LOSS_COMPETITOR = 250.0
-MONEY_LOSS_PER_SECOND = 2.0
+MONEY_GAIN_BRASFEED = 220.0
+MONEY_LOSS_COMPETITOR = 280.0
+MONEY_LOSS_PER_SECOND = 4.0
+
+INITIAL_HEALTH = 100.0
+HEALTH_GAIN_BRASFEED = 10.0
+HEALTH_LOSS_COMPETITOR = 32.0
+HEALTH_LOSS_PER_SECOND = 0.12
 
 # ============================================================
 # TAMANHOS DOS ASSETS
