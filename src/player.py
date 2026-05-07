@@ -10,7 +10,10 @@ from src.config import (
     MONEY_GAIN_BRASFEED,
     MONEY_LOSS_COMPETITOR,
     MONEY_LOSS_PER_SECOND,
-    WHITE,
+    INITIAL_HEALTH,
+    HEALTH_GAIN_BRASFEED,
+    HEALTH_LOSS_COMPETITOR,
+    HEALTH_LOSS_PER_SECOND,
     BLACK,
     PINK,
     PIGLET_SIZE,
@@ -30,8 +33,12 @@ class Player:
 
         self.money = INITIAL_MONEY
         self.initial_money = INITIAL_MONEY
+        self.health = INITIAL_HEALTH
         self.elapsed_seconds = 0.0
         self._time_accumulator_ms = 0
+
+        self.last_event_text = "Gestao do lote iniciada. Busque Brasfeed para melhorar o ROI."
+        self.last_event_timer = 180
 
         self.speed = PLAYER_SPEED
         self.invulnerable_time = 0
@@ -89,15 +96,23 @@ class Player:
         self.rect.x = clamp(self.rect.x, 20, SCREEN_WIDTH - self.rect.width - 20)
         self.rect.y = clamp(self.rect.y, 120, SCREEN_HEIGHT - self.rect.height - 35)
 
+    def set_event_text(self, text):
+        self.last_event_text = text
+        self.last_event_timer = 210
+
     def add_brasfeed(self):
         self.score += 1
         self.money += MONEY_GAIN_BRASFEED
+        self.health = clamp(self.health + HEALTH_GAIN_BRASFEED, 0, INITIAL_HEALTH)
+        self.set_event_text("Brasfeed: +crescimento, +saude e +caixa do lote.")
         self.update_size()
 
     def add_competitor(self):
         if self.invulnerable_time <= 0:
             self.errors += 1
             self.money -= MONEY_LOSS_COMPETITOR
+            self.health = clamp(self.health - HEALTH_LOSS_COMPETITOR, 0, INITIAL_HEALTH)
+            self.set_event_text("Concorrente: doenca, atraso e prejuizo na margem.")
             self.invulnerable_time = 90
 
     def update_economy(self, delta_ms):
@@ -107,6 +122,7 @@ class Player:
             self._time_accumulator_ms -= 1000
             self.elapsed_seconds += 1
             self.money -= MONEY_LOSS_PER_SECOND
+            self.health = clamp(self.health - HEALTH_LOSS_PER_SECOND, 0, INITIAL_HEALTH)
 
     def update(self, delta_ms=0):
         self.move()
@@ -114,6 +130,9 @@ class Player:
 
         if self.invulnerable_time > 0:
             self.invulnerable_time -= 1
+
+        if self.last_event_timer > 0:
+            self.last_event_timer -= 1
 
     def draw_fallback(self, surface):
         pygame.draw.ellipse(surface, PINK, self.rect)
@@ -180,8 +199,14 @@ class Player:
         value = max(0, int(self.money))
         return f"R$ {value:,}".replace(",", ".")
 
+    def get_health_percent(self):
+        return int(clamp(self.health, 0, INITIAL_HEALTH))
+
+    def get_time_text(self):
+        return f"{int(self.elapsed_seconds)}s"
+
     def has_won(self):
-        return self.score >= WIN_SCORE and self.money > 0
+        return self.score >= WIN_SCORE and self.money > 0 and self.health > 0
 
     def has_lost(self, max_errors=MAX_ERRORS):
-        return self.errors >= max_errors or self.money <= 0
+        return self.errors >= max_errors or self.money <= 0 or self.health <= 0
