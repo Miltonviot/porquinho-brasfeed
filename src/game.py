@@ -49,6 +49,27 @@ class Game:
 
         self.menu = Menu(self.screen, self.clock, self.fonts)
 
+    def draw_bar(self, x, y, width, height, value, max_value, fill_color, label):
+        value = max(0, min(value, max_value))
+        ratio = value / max_value if max_value else 0
+
+        bg_rect = pygame.Rect(x, y, width, height)
+        fill_rect = pygame.Rect(x, y, int(width * ratio), height)
+
+        pygame.draw.rect(self.screen, LIGHT_GRAY, bg_rect, border_radius=7)
+        pygame.draw.rect(self.screen, fill_color, fill_rect, border_radius=7)
+        pygame.draw.rect(self.screen, WHITE, bg_rect, 1, border_radius=7)
+
+        draw_text(
+            surface=self.screen,
+            text=label,
+            font=self.fonts["tiny"],
+            color=BLACK,
+            x=x + width // 2,
+            y=y + height // 2,
+            centered=True
+        )
+
     def draw_scenario(self):
         if self.background_image:
             self.screen.blit(self.background_image, (0, 0))
@@ -90,17 +111,27 @@ class Game:
             )
             text_x = 26
 
+        # Texto curto para não colidir com o HUD.
         draw_text(
             surface=self.screen,
-            text="ROI Suinos: Brasfeed melhora o lote. Tempo e concorrente reduzem a margem.",
-            font=self.fonts["normal"],
+            text="ROI Suinos: crescer rapido, manter saude e proteger margem.",
+            font=self.fonts["small"],
             color=WHITE,
             x=text_x,
-            y=32
+            y=24
+        )
+
+        draw_text(
+            surface=self.screen,
+            text="Tempo custa dinheiro. Concorrente reduz saude e caixa.",
+            font=self.fonts["tiny"],
+            color=YELLOW,
+            x=text_x,
+            y=49
         )
 
     def draw_hud(self, player):
-        panel = pygame.Rect(SCREEN_WIDTH - 330, 12, 306, 68)
+        panel = pygame.Rect(SCREEN_WIDTH - 332, 8, 310, 78)
 
         draw_panel(
             surface=self.screen,
@@ -113,53 +144,75 @@ class Game:
 
         roi = player.get_roi_percent()
         roi_color = GREEN if roi >= 0 else RED
+        health = player.get_health_percent()
+        health_color = GREEN if health >= 60 else YELLOW if health >= 30 else RED
 
         draw_text(
             surface=self.screen,
-            text=f"ROI: {roi:+d}%",
+            text=f"ROI {roi:+d}%",
             font=self.fonts["small"],
             color=roi_color,
-            x=panel.x + 16,
+            x=panel.x + 14,
             y=panel.y + 8
         )
 
         draw_text(
             surface=self.screen,
-            text=f"Caixa: {player.get_money_text()}",
-            font=self.fonts["small"],
+            text=f"Caixa {player.get_money_text()}",
+            font=self.fonts["tiny"],
             color=BLACK,
-            x=panel.x + 16,
+            x=panel.x + 14,
             y=panel.y + 31
         )
 
         draw_text(
             surface=self.screen,
-            text=f"Cresc.: {player.score}/5",
-            font=self.fonts["small"],
+            text=f"Cresc. {player.score}/5",
+            font=self.fonts["tiny"],
             color=BLACK,
-            x=panel.x + 150,
-            y=panel.y + 8
+            x=panel.x + 148,
+            y=panel.y + 10
         )
 
         draw_text(
             surface=self.screen,
-            text=f"Doenca: {player.errors}/3",
-            font=self.fonts["small"],
+            text=f"Doenca {player.errors}/3",
+            font=self.fonts["tiny"],
             color=RED,
-            x=panel.x + 150,
-            y=panel.y + 31
+            x=panel.x + 148,
+            y=panel.y + 30
         )
 
         draw_text(
             surface=self.screen,
-            text=f"Fase: {player.get_phase_name()}",
+            text=f"Tempo {player.get_time_text()}",
+            font=self.fonts["tiny"],
+            color=GRAY,
+            x=panel.x + 232,
+            y=panel.y + 10
+        )
+
+        self.draw_bar(
+            x=panel.x + 14,
+            y=panel.y + 53,
+            width=182,
+            height=14,
+            value=health,
+            max_value=100,
+            fill_color=health_color,
+            label=f"Saude {health}%"
+        )
+
+        draw_text(
+            surface=self.screen,
+            text=player.get_phase_name(),
             font=self.fonts["tiny"],
             color=BLUE,
-            x=panel.x + 16,
+            x=panel.x + 214,
             y=panel.y + 53
         )
 
-    def draw_footer_hint(self):
+    def draw_footer_hint(self, player):
         footer = pygame.Rect(18, SCREEN_HEIGHT - 38, SCREEN_WIDTH - 36, 26)
 
         draw_panel(
@@ -171,9 +224,13 @@ class Game:
             border_width=1
         )
 
+        message = player.last_event_text if player.last_event_timer > 0 else (
+            "Regra: Brasfeed aumenta crescimento, saude e caixa. Concorrente causa doenca e prejuizo."
+        )
+
         draw_text(
             surface=self.screen,
-            text="Regra: Brasfeed aumenta caixa e crescimento. Concorrente causa doenca e prejuizo. Cada segundo reduz a margem.",
+            text=message,
             font=self.fonts["tiny"],
             color=GRAY,
             x=footer.centerx,
@@ -273,7 +330,7 @@ class Game:
         products = self.create_products()
 
         while True:
-            delta_ms = self.clock.get_time()
+            delta_ms = self.clock.tick(FPS)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -304,7 +361,7 @@ class Game:
                 product.draw(self.screen)
 
             player.draw(self.screen)
-            self.draw_footer_hint()
+            self.draw_footer_hint(player)
 
             if player.has_won():
                 return "win", player.get_roi_percent(), player.get_money_text()
@@ -313,7 +370,6 @@ class Game:
                 return "lose", player.get_roi_percent(), player.get_money_text()
 
             pygame.display.flip()
-            self.clock.tick(FPS)
 
     def run(self):
         while True:
